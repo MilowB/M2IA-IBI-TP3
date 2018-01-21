@@ -22,7 +22,6 @@ def main():
     for x in range(len(test[0])):
         data = test[0][x]
         label = test[1][x]
-        perceptron.activity(data, label)
         if int(label[perceptron.predict(data)]) == 1:
             gagne += 1
         total += 1
