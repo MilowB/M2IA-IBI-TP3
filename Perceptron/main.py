@@ -1,4 +1,5 @@
-import gzip
+import sys
+sys.path.insert(0,"Perceptron")
 import cPickle
 from Perceptron import *
 from lecture_data import *
