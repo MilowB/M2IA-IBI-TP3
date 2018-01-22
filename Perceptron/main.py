@@ -1,11 +1,12 @@
 import sys
-sys.path.insert(0,"Perceptron")
+sys.path.append("../")
+
 import cPickle
 from Perceptron import *
 from lecture_data import *
 
 def main():
-    data = cPickle.load(gzip.open('mnist.pkl.gz'))
+    data = cPickle.load(gzip.open('../mnist.pkl.gz'))
     apprentissage = data[0]
     test = data[1]
     
