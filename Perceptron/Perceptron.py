@@ -17,4 +17,4 @@ class Perceptron:
             if max < value or argmax is None:
                 max = value
                 argmax = n
-        return self.neurons.index(argmax)
+        return ( argmax.ti == 1).nonzero()

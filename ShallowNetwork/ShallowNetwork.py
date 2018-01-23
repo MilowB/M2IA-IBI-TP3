@@ -9,17 +9,18 @@ class HiddenLayer:
     class Neuron:
         def __init__(self, e, size,index):
             self.e = e
-            self.weight = torch.zeros(size + 1)
-            self.index = index
+            self.weight = torch.rand(size + 1) / 1000
+            #self.weight = torch.add(self.weight, 0.01)
+            self.index = index + 1
 
         def activity(self,data):
-            self.y = 1 / ( 1 + math.exp(-torch.dot(data, self.weight)))
+            self.y = 1.0 / ( 1.0 + math.exp(-torch.dot(data, self.weight)))
             return self.y
 
         def propagate(self, nextLayer):
             sum = 0.0
-            for neuron in nextLayer.neurons:
-                sum = sum + neuron.error * neuron.weight[self.index]
+            for neuron1 in nextLayer.neurons:
+                sum = sum + neuron1.error * neuron1.weight[self.index]
             self.error = self.y * ( 1.0 - self.y ) * sum
 
         def updateWeight(self, data):
@@ -36,15 +37,17 @@ class ExitLayer:
     class Neuron:
         def __init__(self, e, size, id):
             self.e = e
-            self.weight = torch.rand(size + 1)
+            self.weight = torch.zeros(size + 1)
             self.ti = torch.zeros(10)
             self.ti[id] = 1
+            self.id = id
             self.error = 0
 
         def activity(self, data, index):
             act = torch.dot(self.weight, data)
-            self.error = self.ti[index] - act
-            self.error = self.error[0]
+            if index != -1:
+                self.error = self.ti[index] - act
+                self.error = self.error[0]
             return act
 
         def updateWeight(self, data):
@@ -66,9 +69,12 @@ class ShallowNetwork:
         for neuron in self.hiddenLayer.neurons :
             res.append(neuron.activity(data))
         res = torch.FloatTensor(res)
+
+        finalres =[]
         #Calcul resultat couche finale
         for neuron in self.exitLayer.neurons:
             act = neuron.activity(res, index)
+            finalres.append(act)
 
         #Retro propagation et modification des poids de la couche du milieu
         for neuron in self.hiddenLayer.neurons:
@@ -78,10 +84,10 @@ class ShallowNetwork:
         #Modification des poids de la couche finale
         for neuron in self.exitLayer.neurons:
             neuron.updateWeight(res)
+        return finalres
 
-    def predict(self,data,label):
+    def predict(self,data):
         data = torch.cat((torch.Tensor([1]), data), 0)
-        index = (label == 1).nonzero()
         res=[1]
         for neuron in self.hiddenLayer.neurons:
             res.append(neuron.activity(data))
@@ -89,10 +95,10 @@ class ShallowNetwork:
 
         val = None
         argmax = None
+
         for neuron in self.exitLayer.neurons:
-            act = neuron.activity(res, index)
+            act = neuron.activity(res, -1)
             if val is None or act > val:
                 val = act
                 argmax = neuron
-        print argmax, " -> ", int(argmax.ti.index(1)[0])
-        return int(argmax.ti.index(1)[0])
+        return int((argmax.ti == 1).nonzero())
