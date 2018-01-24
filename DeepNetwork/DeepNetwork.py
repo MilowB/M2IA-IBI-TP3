@@ -16,17 +16,18 @@ class DeepNetwork:
         # D_in is input dimension;
         # D_out is output dimension.
         D_in, D_out = sizeEntries, sizeOut
+        resize = 0.13
         # Neurones et leurs poids (w1 couche d'entree, w2 couche de sortie)
-        self.wentry = Variable(torch.randn(D_in, dimensions[0]).uniform_(-0.1,0.1).type(dtype), requires_grad=True) # Couche entree
+        self.wentry = Variable(torch.randn(D_in, dimensions[0]).uniform_(-resize, resize).type(dtype), requires_grad=True) # Couche entree
         
         self.whidden = []
         lastSize = dimensions[0]
         for i in range(0, len(dimensions)):
-            layer = Variable(torch.randn(lastSize, dimensions[i]).uniform_(-0.1,0.1).type(dtype), requires_grad=True) # Couche cachee
+            layer = Variable(torch.randn(lastSize, dimensions[i]).uniform_(-resize, resize).type(dtype), requires_grad=True) # Couche cachee
             self.whidden.append(layer)
             lastSize = dimensions[i]
 
-        self.wout = Variable(torch.randn(lastSize, D_out).uniform_(-0.1,0.1).type(dtype), requires_grad=True) # Couche sortie
+        self.wout = Variable(torch.randn(lastSize, D_out).uniform_(-resize, resize).type(dtype), requires_grad=True) # Couche sortie
         self.learning_rate = e
 
         if self.debug:

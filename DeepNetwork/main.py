@@ -22,8 +22,8 @@ def main():
     # labels de la base de test
     test_data_label = torch.Tensor(data[1][1])
 
-    #Dimension des couches (entree, cachees, sortie)
-    network = DeepNetwork([100, 50, 100], sizeIn, sizeOut, 5e-6, True)
+    #Dimension des couches cachees
+    network = DeepNetwork([10], sizeIn, sizeOut, 5e-6, False)
     network.train(torch.from_numpy(apprentissage[0]), torch.from_numpy(apprentissage[1]))
     network.test(test_data, test_data_label)
 
