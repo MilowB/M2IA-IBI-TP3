@@ -24,7 +24,7 @@ class HiddenLayer:
 
         def updateWeight(self, data):
             delta = self.e * data * self.error
-            self.weight = self.weight + delta
+            self.weight = self.weight - delta
 
 
 class ExitLayer:
@@ -49,7 +49,7 @@ class ExitLayer:
 
         def updateWeight(self, data):
             delta = self.e * data * self.error
-            self.weight = self.weight + delta
+            self.weight = self.weight - delta
 
 class ShallowNetwork:
     def __init__(self, sizeEntries, sizeHidden, sizeExit, e):
