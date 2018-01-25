@@ -37,10 +37,16 @@ class DeepNetwork:
 
 
     def train(self, data, label):
-        x = Variable(data.type(dtype), requires_grad=False)
-        y = Variable(label.type(dtype), requires_grad=False)
+        batch = 100
+        size = len(data)
+        for t in range(5000):
+            st = ( t*batch)%size
+            end = ((t+1)*batch)%size
+            end = size if end < st else end
+            x = Variable(data[st:end].type(dtype), requires_grad=False)
+            y = Variable(label[st:end].type(dtype), requires_grad=False)
 
-        for t in range(100):
+
             y_pred = x.mm(self.wentry).clamp(min=0)
             for layer in self.whidden:
                 y_pred = y_pred.mm(layer)
