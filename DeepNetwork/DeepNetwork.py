@@ -1,4 +1,5 @@
 import torch
+from torch import nn
 from torch.autograd import Variable
 import numpy
 
@@ -58,16 +59,22 @@ class DeepNetwork:
                 x = self._addBiais(x)
                 y = Variable(label[st:end].type(dtype), requires_grad=False)
 
-            y_pred = x.mm(self.wentry).clamp(min=0)
-
+            # Clamp
+            #y_pred = x.mm(self.wentry).clamp(min=0)
+            # Tanh
+            y_pred = torch.tanh(x.mm(self.wentry))
+            #ReLU
+            
             y_pred = self._addBiais(y_pred)
             
             for layer in self.whidden:
-                y_pred = y_pred.mm(layer)
+                #y_pred = y_pred.mm(layer)
+                y_pred = torch.tanh(y_pred.mm(layer))
                 y_pred = self._addBiais(y_pred)
 
 
-            y_pred = y_pred.mm(self.wout)            
+            #y_pred = y_pred.mm(self.wout)
+            y_pred = torch.tanh(y_pred.mm(self.wout))
             loss = (y_pred - y).pow(2).sum()
 
             if self.debug:
@@ -95,13 +102,14 @@ class DeepNetwork:
         
         # Calcul de la matrice de prediction avec les poids modifies plus haut
         # 1 tableau de prediction de taille 10 par ligne du tableau de test
-        y_pred = x.mm(self.wentry).clamp(min=0)
+        #y_pred = x.mm(self.wentry).clamp(min=0)
+        y_pred = torch.tanh(x.mm(self.wentry))
         y_pred = self._addBiais(y_pred)
         for layer in self.whidden:
-            y_pred = y_pred.mm(layer)
+            y_pred = torch.tanh(y_pred.mm(layer))
             y_pred = self._addBiais(y_pred)
 
-        y_pred = y_pred.mm(self.wout)
+        y_pred = torch.tanh(y_pred.mm(self.wout))
 
         for i in range(len(test_data)):
             d = y_pred[i,:]
