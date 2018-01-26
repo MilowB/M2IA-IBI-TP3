@@ -9,7 +9,7 @@ class HiddenLayer:
     class Neuron:
         def __init__(self, e, size,index):
             self.e = e
-            self.weight = torch.rand(size + 1) / 1000
+            self.weight = torch.rand(size + 1).uniform_(-0.1,0.1)
             self.index = index +1
 
         def activity(self,data):
