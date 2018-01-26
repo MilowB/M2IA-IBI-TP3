@@ -10,33 +10,23 @@ dtype = torch.FloatTensor
 # dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU
 
 class DeepNetwork:
-    def __init__(self, dimensions, sizeEntries, sizeOut, e, debug):
+    def __init__(self, sizeEntries, sizeOut, dimensions, e, batch_mode = False, batch_number = 100, debug = False):
         self.debug = debug
+        self.batch_number = batch_number
+        self.batch_mode = batch_mode
         # dimensions is hidden dimensions
         # D_in is input dimension;
         # D_out is output dimension.
         D_in, D_out = sizeEntries, sizeOut
         resize = 0.13
 
-        '''
-        # Ajout du biais sur la premiere couche
-        x = torch.ones(len(wentry))
-        wentry = torch.cat((wentry, x), 1)
-        '''
-        wentry = torch.randn(D_in + 1, dimensions[0]).uniform_(-resize, resize).type(dtype)
-
         # Neurones et leurs poids
+        wentry = torch.randn(D_in + 1, dimensions[0]).uniform_(-resize, resize).type(dtype)
         self.wentry = Variable(wentry, requires_grad=True) # Couche entree
         
-
         self.whidden = []
         lastSize = dimensions[0]
         for i in range(0, len(dimensions)):
-            '''
-            # Ajout du biais sur les couches cachees
-            x = torch.ones(len(hiddenLayer))
-            hiddenLayer = torch.cat((hiddenLayer, x), 1)
-            '''
             hiddenLayer = torch.randn(lastSize + 1, dimensions[i]).uniform_(-resize, resize).type(dtype)
             layer = Variable(hiddenLayer, requires_grad=True) # Couche cachee
             self.whidden.append(layer)
@@ -56,15 +46,24 @@ class DeepNetwork:
         x = self._addBiais(x)
         y = Variable(label.type(dtype), requires_grad=False)
 
-        for t in range(100):
-            lastLayer = self.wentry
+        batch = self.batch_number
+        size = len(data)
+
+        for t in range(3000):
+            if self.batch_mode:
+                st = (t * batch) % size
+                end = ((t + 1) * batch) % size
+                end = size if end < st else end
+                x = Variable(data[st:end].type(dtype), requires_grad=False)
+                x = self._addBiais(x)
+                y = Variable(label[st:end].type(dtype), requires_grad=False)
+
             y_pred = x.mm(self.wentry).clamp(min=0)
 
             y_pred = self._addBiais(y_pred)
             
             for layer in self.whidden:
                 y_pred = y_pred.mm(layer)
-                lastLayer = layer
                 y_pred = self._addBiais(y_pred)
 
 
