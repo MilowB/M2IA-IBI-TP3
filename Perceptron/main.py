@@ -11,18 +11,18 @@ def main():
     test = data[1]
     
     size = len(data[0][0][0])
-    perceptron = Perceptron(size)
+    perceptron = Perceptron(size,0.005)
 
     total = 0
     gagne = 0
     for x in range(100000):
         d =  x % len(apprentissage[0])
-        data = apprentissage[0][d]
+        data = torch.from_numpy(apprentissage[0][d])
         label = apprentissage[1][d]
         perceptron.activity(data, label)
 
     for x in range(len(test[0])):
-        data = test[0][x]
+        data = torch.from_numpy(test[0][x])
         label = test[1][x]
         if int(label[perceptron.predict(data)]) == 1:
             gagne += 1

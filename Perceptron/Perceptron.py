@@ -1,8 +1,8 @@
 from Neuron import *
 
 class Perceptron:
-    def __init__(self, size):
-        self.neurons = [Neuron(i, size) for i in range(0,10)]
+    def __init__(self, size, e):
+        self.neurons = [Neuron(i, size, e) for i in range(0,10)]
 
     def activity(self, data, label):
         index = (label == 1).nonzero()
