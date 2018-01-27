@@ -13,10 +13,9 @@ dtype = torch.FloatTensor
 # dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU
 
 class DeepNetwork:
-    def __init__(self, sizeEntries, sizeOut, dimensions, e, time,batch_mode = False, batch_number = 1, debug = False):
+    def __init__(self, sizeEntries, sizeOut, dimensions, e, time, batch_number = 1, debug = False):
         self.debug = debug
         self.batch_number = batch_number
-        self.batch_mode = batch_mode
         # self.unlinear = torch.clamp(min=0)
         #self.unlinear = torch.tanh
         self.unlinear = torch.sigmoid
