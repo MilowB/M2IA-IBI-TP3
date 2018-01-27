@@ -13,14 +13,15 @@ def main():
     
     sizeIn = len(data[0][0][0])
     sizeOut = len(apprentissage[1][0])
+    e = 5e-6
 
     # images de la base de test
     test_data = torch.Tensor(data[1][0])
     # labels de la base de test
     test_data_label = torch.Tensor(data[1][1])
 
-    #Dimension des couches cachees
-    network = DeepNetwork([10], sizeIn, sizeOut, 5e-4, False)
+    #Dimension des couches cachees [10, 10]
+    network = DeepNetwork(sizeIn, sizeOut, [100], e, True, 100, True)
     network.train(torch.from_numpy(apprentissage[0]), torch.from_numpy(apprentissage[1]))
     network.test(test_data, test_data_label)
 
