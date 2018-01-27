@@ -28,7 +28,7 @@ class HiddenLayer:
 
 
 class ExitLayer:
-    def __init__(self, enterLayer,number,e):
+    def __init__(self   , enterLayer,number,e):
         self.number = number
         self.previousLayer = enterLayer
         self.neurons = [ self.Neuron(e,len(enterLayer),i) for i in range(number)]

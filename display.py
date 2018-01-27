@@ -51,36 +51,22 @@ def display_shallow():
 
 def display_deep():
     data = cPickle.load(gzip.open('mnist.pkl.gz'))
-    hiddens_number = [1,2,4,8,16,32,64]
-    hiddens = [1,2,4,8,16,32,64,128]
-    steps = [0.0001, 0.0005, 0.001,0.005, 0.01,0.05,0.1,0.5,1]
-    time = [10000*i for i in range(1,8)]
-    for j in time:
-        for hidden in hiddens:
-            res =[]
-            # Dimension des couches cachees
-            network = DeepNetwork([10,], sizeIn, sizeOut, 5e-4, False)
-            network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
-            network.test( data[1][0], data[1][1])
-            res.append(test(data[0][0], data[0][1], data[1][0],data[1][1],j,network))
-    plt.plot(time, res)
+    hiddens = [2,4,8,16,32,64,128]#2
+    steps = [0.025,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8]#0.25
+    time = [10000*i for i in range(1,10)] #100 000
+    res = []
+    #layers = [[20 for i in range(j)] for j in range(1,10)]
+    #number = [ i for i in range(1,10)]
+    hid = [ [i,i] for i in hiddens]
+    for h in hid:
+        # Dimension des couches cachees
+        network = DeepNetwork( len(data[0][0][0]), 10, h,0.25,100000)
+        network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+        res.append(network.test( data[1][0], data[1][1]))
+    plt.plot(hiddens, res,"-o")
+    plt.xscale("linear")
     plt.ylabel("Taux de reussite")
-    plt.xlabel("Nombre de couches cachees")
-    plt.show()
-
-    # create discrete colormap
-    cmap = colors.ListedColormap(['red', 'blue'])
-    bounds = [i for i in range(0,10)]
-    norm = colors.BoundaryNorm(bounds, cmap.N)
-
-    fig, ax = plt.subplots()
-    ax.imshow(data, cmap=cmap, norm=norm)
-
-    # draw gridlines
-    ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=1)
-    ax.set_xticks(np.arange(-.5, 10, 1));
-    ax.set_yticks(np.arange(-.5, 10, 1));
-
+    plt.xlabel("Nombre de neurones par couches")
     plt.show()
 
 
@@ -99,4 +85,4 @@ def display():
     plt.show()
 
 if __name__ == '__main__':
-    display_shallow()
+    display_deep()
