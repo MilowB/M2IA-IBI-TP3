@@ -34,34 +34,36 @@ def test(learn_data,learn_data_label, test_data, test_data_label,time,network):
 
 def display_shallow():
     data = cPickle.load(gzip.open('mnist.pkl.gz'))
-    #hiddens = [1,2,4,8,16,32,64,128]
-    hiddens=[10]
-    time = [5000*i for i in range(1,10)]
+    hiddens = [1,2,4,8,16,32,64,128]
+    time = [5000*i for i in range(1,15)]
+    steps = [0.0001, 0.0005, 0.001,0.005, 0.01,0.05,0.1,0.5,1]
+
     res=[]
-    for hidden in hiddens:
-        network = ShallowNetwork(len(data[0][0][0]), hidden, 10, 0.01)
-        res.append(test(data[0][0], data[0][1], data[1][0],data[1][1],10000,network))
+    for s in steps:
+        network = ShallowNetwork(len(data[0][0][0]), 16, 10, s)
+        res.append(test(data[0][0], data[0][1], data[1][0],data[1][1],60000,network))
         print res
-    '''plt.plot(hiddens, res,'-')
+    plt.plot(steps, res,'-o')
     plt.ylabel("Taux de reussite")
-    plt.xscale("log", basex=2)
-    plt.xlabel("Nombre de neurones dans la couche cachee")
-    plt.show()'''
+    plt.xscale("log")
+    plt.xlabel("Taux d'apprentissage")
+    plt.show()
 
 def display_deep():
     data = cPickle.load(gzip.open('mnist.pkl.gz'))
-    hiddens = [1,10,20,50,100]
+    hiddens_number = [1,2,4,8,16,32,64]
+    hiddens = [1,2,4,8,16,32,64,128]
+    steps = [0.0001, 0.0005, 0.001,0.005, 0.01,0.05,0.1,0.5,1]
     time = [10000*i for i in range(1,8)]
     for j in time:
         for hidden in hiddens:
             res =[]
-            network = ShallowNetwork(len(data[0][0][0]), hidden, 10, 0.001)
+            # Dimension des couches cachees
+            network = DeepNetwork([10,], sizeIn, sizeOut, 5e-4, False)
+            network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+            network.test( data[1][0], data[1][1])
             res.append(test(data[0][0], data[0][1], data[1][0],data[1][1],j,network))
-            plt.plot(time, res, label="Neurons={}".format(i))
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-    leg = plt.legend(loc='center left', ncol=1, mode=None,bbox_to_anchor=(1, 0.5))
-    leg.get_frame().set_alpha(0.5)
+    plt.plot(time, res)
     plt.ylabel("Taux de reussite")
     plt.xlabel("Nombre de couches cachees")
     plt.show()

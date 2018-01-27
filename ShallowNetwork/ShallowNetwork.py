@@ -9,13 +9,11 @@ class HiddenLayer:
     class Neuron:
         def __init__(self, e, size,index):
             self.e = e
-            self.weight = torch.rand(size + 1).uniform_(-0.1,0.1)
+            self.weight = torch.rand(size + 1)/1000#.uniform_(-0.1,0.1)/1000
             self.index = index +1
 
         def activity(self,data):
             self.y = 1.0 / ( 1.0 + math.exp(-torch.dot(data, self.weight)))
-            if self.index == 1:
-                print self.y
             return self.y
 
         def propagate(self, nextLayer):
@@ -26,7 +24,7 @@ class HiddenLayer:
 
         def updateWeight(self, data):
             delta = self.e * data * self.error
-            self.weight = self.weight - delta
+            self.weight = self.weight + delta
 
 
 class ExitLayer:
@@ -38,7 +36,7 @@ class ExitLayer:
     class Neuron:
         def __init__(self, e, size, id):
             self.e = e
-            self.weight = torch.rand(size + 1)
+            self.weight = torch.zeros(size + 1)
             self.ti = torch.zeros(10)
             self.ti[id] = 1
             self.id = id
@@ -53,7 +51,7 @@ class ExitLayer:
 
         def updateWeight(self, data):
             delta = self.e * data * self.error
-            self.weight = self.weight - delta
+            self.weight = self.weight + delta
 
 class ShallowNetwork:
     def __init__(self, sizeEntries, sizeHidden, sizeExit, e):
