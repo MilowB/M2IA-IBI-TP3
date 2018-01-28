@@ -4,6 +4,7 @@ from torch.autograd import Variable
 import numpy
 import torch.optim as optim
 import torch.nn as nn
+from collections import OrderedDict
 
 #AVANT DE COMMENCER VOICI LE LIEN VERS LA DOC:
 # http://pytorch.org/tutorials/beginner/examples_autograd/two_layer_net_autograd.html
@@ -18,8 +19,8 @@ class DeepNetwork:
         self.batch_number = batch_number
         self.batch_mode = batch_mode
         # self.unlinear = torch.clamp(min=0)
-        #self.unlinear = torch.tanh
-        self.unlinear = torch.sigmoid
+        self.unlinear = nn.ReLU
+        #self.unlinear = nn.Sigmoid
         self.time = time
 
         # dimensions is hidden dimensions
@@ -28,23 +29,11 @@ class DeepNetwork:
         D_in, D_out = sizeEntries, sizeOut
         resize = 0.13
 
-        #Functions used in the optimizer
-        self.model = torch.nn.Sequential(
-            nn.Sigmoid(),
-            torch.nn.Linear(batch_number, D_out),
-        )
-        #loss function
-        self.loss_fn = torch.nn.MSELoss(size_average=False)
-
-        #optimizer, adagrad adapte la fonction d'activation
-        self.optimizer = optim.Adagrad([
-            {'params': self.model.base.parameters()},
-        ])
-
         # Neurones et leurs poids
         wentry = torch.randn(D_in + 1, dimensions[0]).uniform_(-resize, resize).type(dtype)
         self.wentry = Variable(wentry, requires_grad=True) # Couche entree
-        
+
+        optim_hidden = [("e" , torch.nn.Linear(D_in, dimensions[0]))]
         self.whidden = []
         lastSize = dimensions[0]
         for i in range(0, len(dimensions)):
@@ -52,9 +41,22 @@ class DeepNetwork:
             layer = Variable(hiddenLayer, requires_grad=True) # Couche cachee
             self.whidden.append(layer)
             lastSize = dimensions[i]
-
+            optim_hidden.append(("e"+str(i), self.unlinear()))
+        optim_hidden.append(("f" , torch.nn.Linear(dimensions[0], D_out)))
         self.wout = Variable(torch.randn(lastSize + 1, D_out).uniform_(-resize, resize).type(dtype), requires_grad=True) # Couche sortie
         self.learning_rate = e
+
+        #Functions used in the optimizer
+        self.model = torch.nn.Sequential(OrderedDict(optim_hidden))
+        #loss function
+        self.loss_fn = torch.nn.MSELoss(size_average=False)
+        #optimizer, adagrad adapte la fonction d'activation
+        self.optimizer = optim.Adam([
+            {
+                'params': self.model.parameters(),
+                'lr': e
+             },
+        ])
 
         if self.debug:
             print "learning rate : ", self.learning_rate
@@ -62,7 +64,6 @@ class DeepNetwork:
 
     def train_optimize(self,data,label):
         x = Variable(data.type(dtype), requires_grad=False)
-        x = self._addBiais(x)
         y = Variable(label.type(dtype), requires_grad=False)
         # Forward pass: compute predicted y by passing x to the model.
         batch = self.batch_number
@@ -72,7 +73,6 @@ class DeepNetwork:
             end = ((t + 1) * batch) % size
             end = size if end < st else end
             x = Variable(data[st:end].type(dtype), requires_grad=False)
-            x = self._addBiais(x)
             y = Variable(label[st:end].type(dtype), requires_grad=False)
             y_pred = self.model(x)
             # Compute and print loss.
@@ -85,7 +85,6 @@ class DeepNetwork:
 
     def train(self, data, label):
         x = Variable(data.type(dtype), requires_grad=False)
-        x = self._addBiais(x)
         y = Variable(label.type(dtype), requires_grad=False)
 
         batch = self.batch_number
@@ -98,16 +97,9 @@ class DeepNetwork:
             x = Variable(data[st:end].type(dtype), requires_grad=False)
             x = self._addBiais(x)
             y = Variable(label[st:end].type(dtype), requires_grad=False)
-
-            # Clamp
-            #y_pred = x.mm(self.wentry).clamp(min=0)
-            # Tanh y_pred = torch.tanh(x.mm(self.wentry))
-            #sigmoid y_pred = torch.sigmoid(x.mm(self.wentry))
             y_pred = self.unlinear(x.mm(self.wentry))
-            #ReLU
-            
             y_pred = self._addBiais(y_pred)
-            
+
             for layer in self.whidden:
                 #y_pred = y_pred.mm(layer)
                 y_pred = self.unlinear(y_pred.mm(layer))
@@ -139,7 +131,7 @@ class DeepNetwork:
         test_data=torch.Tensor(test_data)
         test_data_label=torch.Tensor(test_data_label)
         x = Variable(test_data , requires_grad=False)
-        x = self._addBiais(x)
+        x=self._addBiais(x)
         y = Variable(test_data_label, requires_grad=False)
         
         # Calcul de la matrice de prediction avec les poids modifies plus haut
@@ -149,7 +141,7 @@ class DeepNetwork:
         y_pred = self._addBiais(y_pred)
         for layer in self.whidden:
             y_pred = self.unlinear(y_pred.mm(layer))
-            y_pred = self._addBiais(y_pred)
+            y_pred=self._addBiais(y_pred)
 
         y_pred = self.unlinear(y_pred.mm(self.wout))
 
@@ -166,6 +158,23 @@ class DeepNetwork:
         #print("Valeurs mal predit:  %d " % (len(test_data) - accurrancy))
         #print("Taux de reussite:    %f " % ((float(accurrancy)/len(test_data)) * 100))
         return (float(accurrancy)/len(test_data)) * 100
+
+    def test_optimize(self, test_data, test_data_label):
+        accurrancy = 0
+        test_data = torch.Tensor(test_data)
+        test_data_label = torch.Tensor(test_data_label)
+        x = Variable(test_data, requires_grad=False)
+        y_pred = self.model(x)
+
+        for i in range(len(test_data)):
+            d = y_pred[i, :]
+            valuesx, indicesx = torch.max(d, 0)
+            indices2 = numpy.argmax(test_data_label[i, :])
+            indices1 = indicesx.data.numpy()[0]
+            # print("predicted %f label %f" % (indices1,indices2  ))
+            if (indices1 == indices2):
+                accurrancy += 1
+        return (float(accurrancy) / len(test_data)) * 100
 
     def _addBiais(self, matrix):
         # Ajout du biais sur les nouvelles donnees
