@@ -13,12 +13,17 @@ dtype = torch.FloatTensor
 # dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU
 
 class DeepNetwork:
-    def __init__(self, sizeEntries, sizeOut, dimensions, e, time, batch_number = 1, debug = False):
+    def __init__(self, sizeEntries, sizeOut, dimensions, e, time, function = "sigmoid", batch_number = 1, debug = False):
         self.debug = debug
         self.batch_number = batch_number
-        # self.unlinear = torch.clamp(min=0)
-        #self.unlinear = torch.tanh
-        self.unlinear = torch.sigmoid
+
+        if function == "relu":
+            self.unlinear = nn.ReLU()
+        elif function == "tanh":
+            self.unlinear = torch.tanh
+        elif function == "sigmoid":
+            self.unlinear = torch.sigmoid
+
         self.time = time
 
         # dimensions is hidden dimensions
@@ -37,7 +42,7 @@ class DeepNetwork:
 
         #optimizer, adagrad adapte la fonction d'activation
         self.optimizer = optim.Adagrad([
-            {'params': self.model.base.parameters()},
+            {'params': self.model.parameters()},
         ])
 
         # Neurones et leurs poids

@@ -1,5 +1,6 @@
 import gzip
 import sys
+import numpy as np
 sys.path.append("./DeepNetwork")
 sys.path.append("./Perceptron")
 sys.path.append("./ShallowNetwork")
@@ -31,6 +32,131 @@ def test(learn_data,learn_data_label, test_data, test_data_label,time,network):
             gagne += 1
         total += 1
     return (float(gagne) / float(total)) * 100
+
+def display_relu():
+    data = cPickle.load(gzip.open('mnist.pkl.gz'))
+    hiddens = [2,4,8,16,32,64,90,128]#2
+    arrRelu = []
+
+    for i in range(8):
+        relu = []
+        for h in hiddens:
+            network = DeepNetwork( len(data[0][0][0]), 10, [h], 1e-2, 10000, "relu")
+            network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+            relu.append(network.test( data[1][0], data[1][1]))
+        if i > 0:
+            arrRelu.append(relu)
+
+    for arr in arrRelu:
+        relu = np.add(relu, arr)
+    if len(arrRelu) >= 1:
+        relu = relu / (len(arrRelu) + 1)
+
+    fig, ax = plt.subplots()
+    ax.plot(hiddens, relu, "-o", label='ReLU')
+    ax.legend(loc='center right', shadow=True)
+
+    plt.xscale("linear")
+    plt.ylabel("Taux de reussite")
+    plt.xlabel("Nombre de neurones par couches")
+    plt.savefig("relu.png")
+    plt.show()
+
+def display_tanh_pas():
+    data = cPickle.load(gzip.open('mnist.pkl.gz'))
+    hiddens = [90]#2
+    steps = [1e-6, 1e-5, 1e-4,1e-3, 1e-2,1e-1]
+    
+    arrTanh = []
+
+    for i in range(1):
+        tanh = []
+        for h in steps:
+            network = DeepNetwork( len(data[0][0][0]), 10, [90], h, 1000, "tanh")
+            network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+            tanh.append(network.test( data[1][0], data[1][1]))
+        if i > 0:
+            arrTanh.append(tanh)
+
+    for arr in arrTanh:
+        tanh = np.add(tanh, arr)
+    if len(arrTanh) >= 1:
+        tanh = tanh / (len(arrTanh) + 1)
+
+    fig, ax = plt.subplots()
+    ax.plot(steps, tanh, "-o", label='Tanh')
+    ax.legend(loc='center right', shadow=True)
+
+    plt.xscale("linear")
+    plt.ylabel("Taux de reussite")
+    plt.xlabel("Nombre de neurones par couches")
+    plt.savefig("tanh.png")
+    plt.show()
+
+def display_relu_pas():
+    data = cPickle.load(gzip.open('mnist.pkl.gz'))
+    hiddens = [90]#2
+    steps = [1e-6, 1e-5, 1e-4,1e-3, 1e-2,1e-1]
+    
+    arrRelu = []
+
+    for i in range(1):
+        relu = []
+        for h in steps:
+            network = DeepNetwork( len(data[0][0][0]), 10, [90], h, 10000, "relu")
+            network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+            relu.append(network.test( data[1][0], data[1][1]))
+        if i > 0:
+            arrRelu.append(relu)
+
+    for arr in arrRelu:
+        relu = np.add(relu, arr)
+    if len(arrRelu) >= 1:
+        relu = relu / (len(arrRelu) + 1)
+
+    fig, ax = plt.subplots()
+    ax.plot(steps, relu, "-o", label='ReLU')
+    ax.legend(loc='center right', shadow=True)
+
+    plt.xscale("linear")
+    plt.ylabel("Taux de reussite")
+    plt.xlabel("Nombre de neurones par couches")
+    plt.savefig("relu.png")
+    plt.show()
+
+def display_activations():
+    data = cPickle.load(gzip.open('mnist.pkl.gz'))
+    hiddens = [2,4,8,16,32,64,128]#2
+    relu = []
+    tanh = []
+    sigmoid = []
+
+    for h in hiddens:
+        network = DeepNetwork( len(data[0][0][0]), 10, [h], 1e-2, 20000, "relu")
+        network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+        relu.append(network.test( data[1][0], data[1][1]))
+    
+    for h in hiddens:
+        network = DeepNetwork( len(data[0][0][0]), 10, [h], 1e-2, 50000, "tanh")
+        network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+        tanh.append(network.test( data[1][0], data[1][1]))
+    
+    for h in hiddens:
+        network = DeepNetwork( len(data[0][0][0]), 10, [h], 0.1, 60000, "sigmoid")
+        network.train(torch.from_numpy(data[0][0]), torch.from_numpy(data[0][1]))
+        sigmoid.append(network.test( data[1][0], data[1][1]))
+
+    fig, ax = plt.subplots()
+    ax.plot(hiddens, tanh, "-o", label='Tanh')
+    ax.plot(hiddens, relu, "-o", label='ReLU')
+    ax.plot(hiddens, sigmoid, "-o", label='Sigmoid')
+    ax.legend(loc='center right', shadow=True)
+
+    plt.xscale("linear")
+    plt.ylabel("Taux de reussite")
+    plt.xlabel("Nombre de neurones par couches")
+    plt.savefig("deep.png")
+    plt.show()
 
 def display_shallow():
     data = cPickle.load(gzip.open('mnist.pkl.gz'))
@@ -85,4 +211,4 @@ def display():
     plt.show()
 
 if __name__ == '__main__':
-    display_deep()
+    display_activations()
